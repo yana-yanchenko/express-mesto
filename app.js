@@ -1,33 +1,33 @@
+const express = require('express');
 
-const express = require('express')
-const mongoose = require("mongoose", {
+const mongoose = require('mongoose', {
   useNewUrlParser: true,
   useCreateIndex: true,
-  useFindAndModify: false
-})
-const userRouters = require('./routes/user')
-const cardRouters = require('./routes/card')
-const app = express()
+  useFindAndModify: false,
+});
+const userRouters = require('./routes/user');
+const cardRouters = require('./routes/card');
 
-const mestodb = 'mongodb://localhost:27017/mestodb'
-const { PORT = 3000 } = process.env
+const app = express();
 
-app.use(express.json())
+const mestodb = 'mongodb://localhost:27017/mestodb';
+const { PORT = 3000 } = process.env;
+
+app.use(express.json());
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '618c0237e493fcf6545805a6' // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '618cfd210a467691fdd8cece', // вставьте сюда _id созданного в предыдущем пункте пользователя
   };
 
   next();
 });
 
-app.use('/', userRouters)
-app.use('/', cardRouters)
-
+app.use('/', userRouters);
+app.use('/', cardRouters);
 
 app.listen(PORT, () => {
-  console.log(`Server start http://localhost:${PORT}`)
-})
+  console.log(`Server start http://localhost:${PORT}`);
+});
 
 mongoose.connect(mestodb);
