@@ -9,7 +9,7 @@ router.get('/users/:userId', getUserId);
 
 router.post('/users', postUser);
 
-router.patch('/user/me', updateUserMe);
-router.patch('/user/me/avatar', updateUserMeAvatar);
+router.patch('/users/me', updateUserMe);
+router.patch('/users/me/avatar', updateUserMeAvatar);
 
 module.exports = router;

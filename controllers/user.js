@@ -28,11 +28,11 @@ module.exports.getUserId = (req, res) => {
 };
 
 module.exports.postUser = (req, res) => {
-  const { name, aboute, avatar } = req.body;
-  if (!name || !aboute || !avatar) {
-    res.status(400).send({ message: '400 — Переданы некорректные данные при создании пользователя' });
+  const { name, about, avatar } = req.body;
+  if (!name || !about || !avatar) {
+    return res.status(400).send({ message: '400 — Переданы некорректные данные при создании пользователя' });
   }
-  UserModel.create({ name, aboute, avatar })
+  return UserModel.create({ name, about, avatar })
     .then((user) => {
       res.status(200).send(user);
     })
@@ -42,16 +42,16 @@ module.exports.postUser = (req, res) => {
 };
 
 module.exports.updateUserMe = (req, res) => {
-  const { name, aboute } = req.body;
-  if (!name || !aboute) {
-    res.status(400).send({ message: '400 — Переданы некорректные данные при обновлении профиля.' });
+  const { name, about } = req.body;
+  if (!name || !about) {
+    return res.status(400).send({ message: '400 — Переданы некорректные данные при обновлении профиля.' });
   }
-  UserModel.findByIdAndUpdate(req.user._id, { name, aboute }, { new: true })
+  return UserModel.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: '404 — Пользователь с указанным _id не найден.' });
+        return res.status(404).send({ message: '404 — Пользователь с указанным _id не найден.' });
       }
-      res.status(200).send(user);
+      return res.status(200).send(user);
     })
     .catch(() => {
       res.status(500).send({ message: '500 — Ошибка по умолчанию.' });
@@ -61,14 +61,14 @@ module.exports.updateUserMe = (req, res) => {
 module.exports.updateUserMeAvatar = (req, res) => {
   const { avatar } = req.body;
   if (!avatar) {
-    res.status(400).send({ message: '400 — Переданы некорректные данные при обновлении профиля.' });
+    return res.status(400).send({ message: '400 — Переданы некорректные данные при обновлении профиля.' });
   }
-  UserModel.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
+  return UserModel.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: '404 — Пользователь с указанным _id не найден.' });
+        return res.status(404).send({ message: '404 — Пользователь с указанным _id не найден.' });
       }
-      res.status(200).send(user);
+      return res.status(200).send(user);
     })
     .catch(() => {
       res.status(500).send({ message: '500 — Ошибка по умолчанию.' });

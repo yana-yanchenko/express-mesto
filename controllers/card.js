@@ -14,9 +14,9 @@ module.exports.createCard = (req, res) => {
   const user = req.user._id;
   const { name, link } = req.body;
   if (!name || !link) {
-    res.status(400).send({ message: '400 — Переданы некорректные данные при создании карточки.' });
+    return res.status(400).send({ message: '400 — Переданы некорректные данные при создании карточки.' });
   }
-  CardModel.create({ name, link, owner: user })
+  return CardModel.create({ name, link, owner: user })
     .then((card) => {
       res.status(200).send(card);
     })
@@ -50,9 +50,9 @@ module.exports.setLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: '404 — Передан несуществующий _id карточки.' });
+        return res.status(404).send({ message: '404 — Передан несуществующий _id карточки.' });
       }
-      res.status(200).send({ message: 'Лайк поставлен!' });
+      return res.status(200).send({ message: 'Лайк поставлен!' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -66,9 +66,9 @@ module.exports.deleteLike = (req, res) => {
   CardModel.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: '404 — Передан несуществующий _id карточки.' });
+        return res.status(404).send({ message: '404 — Передан несуществующий _id карточки.' });
       }
-      res.status(200).send({ message: 'Лайк Удалён!' });
+      return res.status(200).send({ message: 'Лайк Удалён!' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
