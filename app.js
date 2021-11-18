@@ -1,4 +1,7 @@
 const express = require('express');
+const { errors } = require('celebrate');
+const errorsMy = require('./middlewares/errors');
+const NotFoundError = require('./errors/not-found-err');
 
 const mongoose = require('mongoose', {
   useNewUrlParser: true,
@@ -15,16 +18,13 @@ const { PORT = 3000 } = process.env;
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '618e5fc46a50955cb6850594', // вставьте сюда _id созданного в предыдущем пункте пользователя
-  };
-
-  next();
-});
-
 app.use('/', userRouters);
 app.use('/', cardRouters);
+
+app.use('*', () => { throw new NotFoundError('Не найдено'); });
+
+app.use(errors());
+app.use(errorsMy);
 
 app.listen(PORT, () => {
   console.log(`Server start http://localhost:${PORT}`);

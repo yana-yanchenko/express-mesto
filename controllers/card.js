@@ -1,48 +1,61 @@
 const CardModel = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
+const ForbiddenError = require('../errors/forbidden-err');
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   CardModel.find()
     .then((data) => {
       res.status(200).send(data);
     })
     .catch(() => {
-      res.status(500).send({ message: '500 — Ошибка по умолчанию.' });
+      next();
     });
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const user = req.user._id;
   const { name, link } = req.body;
   if (!name || !link) {
-    return res.status(400).send({ message: '400 — Переданы некорректные данные при создании карточки.' });
+    throw new BadRequestError('400 — Переданы некорректные данные при создании карточки.');
   }
   return CardModel.create({ name, link, owner: user })
     .then((card) => {
       res.status(200).send(card);
     })
-    .catch(() => {
-      res.status(500).send({ message: '500 — Ошибка по умолчанию.' });
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('400 — Переданы некорректные данные при создании карточки.'));
+      }
+      next(err);
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
-  CardModel.findByIdAndRemove(cardId)
+  CardModel.findById(cardId)
+    .orFail(() => new NotFoundError('404 — Карточка по указанному _id не найден.'))
     .then((card) => {
-      if (!card) {
-        return res.status(404).send({ message: '404 — Карточка с указанным _id не найдена.' });
+      if (card.owner.toString() !== req.user._id.toString()) {
+        throw new ForbiddenError('Карточка вам не пренадлежит!');
       }
-      return res.status(200).send({ message: 'Карточка удалена!' });
+      CardModel.findByIdAndRemove(cardId)
+        .then(() => {
+          res.status(200).send({ message: 'Карточка удалена!' });
+        })
+        .catch((err) => {
+          next(err);
+        });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: '400 — Переданы некорректные данные для удаления карточки' });
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        next(new BadRequestError('400 — Переданы некорректные данные для удаления карточки'));
       }
-      return res.status(500).send({ message: '500 — Ошибка по умолчанию.' });
+      next(err);
     });
 };
 
-module.exports.setLike = (req, res) => {
+module.exports.setLike = (req, res, next) => {
   CardModel.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -50,30 +63,30 @@ module.exports.setLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: '404 — Передан несуществующий _id карточки.' });
+        throw new NotFoundError('404 — Передан несуществующий _id карточки.');
       }
       return res.status(200).send({ message: 'Лайк поставлен!' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: '400 — Переданы некорректные данные для постановки/снятии лайка.' });
+        next(new BadRequestError('400 — Переданы некорректные данные для постановки/снятии лайка.'));
       }
-      return res.status(500).send({ message: '500 — Ошибка по умолчанию.' });
+      next(err);
     });
 };
 
-module.exports.deleteLike = (req, res) => {
+module.exports.deleteLike = (req, res, next) => {
   CardModel.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: '404 — Передан несуществующий _id карточки.' });
+        throw new NotFoundError('404 — Передан несуществующий _id карточки.');
       }
       return res.status(200).send({ message: 'Лайк Удалён!' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: '400 — Переданы некорректные данные для постановки/снятии лайка.' });
+        next(new BadRequestError('400 — Переданы некорректные данные для постановки/снятии лайка.'));
       }
-      return res.status(500).send({ message: '500 — Ошибка по умолчанию.' });
+      next(err);
     });
 };
