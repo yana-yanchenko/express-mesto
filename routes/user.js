@@ -8,19 +8,13 @@ const auth = require('../middlewares/auth');
 
 router.get('/users', auth, getAllUsers);
 
-router.get('/users/:userId', auth, getUserId);
+router.get('/users/:userId', auth, celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().hex().length(24).required(),
+  }),
+}), getUserId);
 
 router.get('/user/me', auth, getUserMe);
-
-router.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(7),
-  }),
-}), createUser);
 
 router.patch('/users/me', auth, celebrate({
   body: Joi.object().keys({
@@ -41,5 +35,15 @@ router.post('/signin', celebrate({
     password: Joi.string().required().min(7),
   }),
 }), login);
+
+router.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(/^https?:\/\/(www.)?[a-zA-Z0-9-.]+\.[a-zA-Z]{2,}([a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+)*#*$/),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(7),
+  }),
+}), createUser);
 
 module.exports = router;

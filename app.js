@@ -2,6 +2,7 @@ const express = require('express');
 const { errors } = require('celebrate');
 const errorsMy = require('./middlewares/errors');
 const NotFoundError = require('./errors/not-found-err');
+const auth = require('./middlewares/auth');
 
 const mongoose = require('mongoose', {
   useNewUrlParser: true,
@@ -21,7 +22,7 @@ app.use(express.json());
 app.use('/', userRouters);
 app.use('/', cardRouters);
 
-app.use('*', () => { throw new NotFoundError('Не найдено'); });
+app.use('*', auth, () => { throw new NotFoundError('Не найдено'); });
 
 app.use(errors());
 app.use(errorsMy);

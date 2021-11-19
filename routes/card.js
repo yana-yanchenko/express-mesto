@@ -13,8 +13,20 @@ router.post('/cards', auth, celebrate({
     link: Joi.string().required().pattern(/^https?:\/\/(www.)?[a-zA-Z0-9-.]+\.[a-zA-Z]{2,}([a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+)*#*$/),
   }),
 }), createCard);
-router.delete('/cards/:cardId', auth, deleteCard);
-router.put('/cards/:cardId/likes', auth, setLike);
-router.delete('/cards/:cardId/likes', auth, deleteLike);
+router.delete('/cards/:cardId', auth, celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().length(24).required(),
+  }),
+}), deleteCard);
+router.put('/cards/:cardId/likes', auth, celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().length(24).required(),
+  }),
+}), setLike);
+router.delete('/cards/:cardId/likes', auth, celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().length(24).required(),
+  }),
+}), deleteLike);
 
 module.exports = router;
